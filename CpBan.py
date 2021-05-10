@@ -73,8 +73,8 @@ def comment(vk, group_id, post_id, bad, listComment_id, if3):
                     count = count-100
                     x = x+100
                     if count < 101:                                                                                                 # если коммментов стало меньше чем 101
-                            comm = vk.wall.getComments(owner_id=group_id, post_id=post_id, count=count, sort='desc', offset=x, thread_items_count=10)      # со сдвигом
-                            send_to_check(vk, count, comm, group_id, bad, listComment_id, 0)
+                        comm = vk.wall.getComments(owner_id=group_id, post_id=post_id, count=count, sort='desc', offset=x, thread_items_count=10)      # со сдвигом
+                        send_to_check(vk, count, comm, group_id, bad, listComment_id, 0)
 
         elif count < 101:                                                                                   # если комментов изначально меньше 101
             comm = vk.wall.getComments(owner_id=group_id, post_id=post_id, count=count, sort='desc', thread_items_count=10)        # получаем комментарии
@@ -85,14 +85,14 @@ def comment(vk, group_id, post_id, bad, listComment_id, if3):
     
 
 def send_to_check(vk, count, comm, group_id, bad, listComment_id, if3):
-    try:
-        for i in range(count):
-                check(vk, group_id, bad, comm['items'][i]['attachments'][0]['photo']['sizes'][6]['url'], comm['items'][i]['id'], comm['items'][i]["from_id"], listComment_id, 0)
-                if comm['items'][i]['thread']['count'] != 0:
-                    for x in range(comm['items'][i]['thread']['count']):
-                            check(vk, group_id, bad, comm['items'][i]['thread']['items'][x]['attachments'][0]['photo']['sizes'][6]['url'], comm['items'][i]['thread']['items'][x]['id'], comm['items'][i]['thread']['items'][x]["from_id"], listComment_id, 0)
-    except:
-        pass
+    for i in range(count):
+        try:
+            check(vk, group_id, bad, comm['items'][i]['attachments'][0]['photo']['sizes'][6]['url'], comm['items'][i]['id'], comm['items'][i]["from_id"], listComment_id, 0)
+            if comm['items'][i]['thread']['count'] != 0:
+                for x in range(comm['items'][i]['thread']['count']):
+                        check(vk, group_id, bad, comm['items'][i]['thread']['items'][x]['attachments'][0]['photo']['sizes'][6]['url'], comm['items'][i]['thread']['items'][x]['id'], comm['items'][i]['thread']['items'][x]["from_id"], listComment_id, 0)
+        except:
+            pass
 
 
 def check(vk, group_id, bad, url, comment_id, id, listComment_id, if3):
@@ -221,14 +221,14 @@ def comment1(vk, group_id, post_id, bad, listComment_id):
 
 
 def send_to_check1(vk, count, comm, group_id, bad,listComment_id):
-    try:
-        for i in range(count):
+    for i in range(count):
+        try:
             check1(vk, group_id, bad, comm['items'][i]['text'], comm['items'][i]['id'], listComment_id)
             if comm['items'][i]['thread']['count'] != 0:
                 for x in range(comm['items'][i]['thread']['count']):
                         check1(vk, group_id, bad, comm['items'][i]['thread']['items'][x]['text'], comm['items'][i]['thread']['items'][x]['id'], listComment_id)
-    except:
-        pass
+        except:
+            pass
 
 
 def check1(vk, group_id, bad, text, comment_id, listComment_id):
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     # список для проверки текста на фото
     bad1 = 'пиш', 'брауз', 'тел', 'дет', 'цп', 'порн', 'смот', 'вбив', 'лет', 'det', 'cp', 'porn', 'pish', 'tel', 'слив', 'sliv', 'школ', 'tg', 'lvl', 'ищи', 'вбей', 'стин', 'закре','поиск','стене'
 
-    token = "" # ваш токен
+    token = "14a3e7a85e62b206d5699194ed75b971561a06f4bba33f7efeae24060f6ec77d424700c09ba614ff4afb6" # ваш токен
 
 
     while True:
