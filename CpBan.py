@@ -1,11 +1,9 @@
-import vk_api, time, random, pytesseract, cv2, os, requests, threading, numpy as np
-from colorama import Fore, Back, Style
+import vk_api, time, pytesseract, cv2, os, requests, threading, numpy as np
+from colorama import Fore, Back
 from colorama import init
-from bs4 import BeautifulSoup
 pytesseract.pytesseract.tesseract_cmd = r'D:\OCR\tesseract'   # путь до exe файла pytesseract
 os.system('')
 init(autoreset=True)
-
 
 
 def main(token, bad1, group_id):
@@ -18,7 +16,7 @@ def main(token, bad1, group_id):
         try:
             row.update({group_id: wall['items'][0]['id']})
         except IndexError:
-            group = wall['groups'][0]
+            pass
         while True:
             for group_id, latest_post_id in row.items():
                 wall = vk.wall.get(owner_id=group_id, count=2)
@@ -39,13 +37,10 @@ def main(token, bad1, group_id):
                                 post_id = a['items'][1]['id']
                         except:
                             post_id = a['items'][0]['id']
-
                         print(Fore.GREEN + "Обнаружен пост, жду набор комментариев с цп")
                         time.sleep(15)
                         print(Fore.GREEN + "Проверка поста -- "+str(post_id))
-
                         listComment_id = []
-
                         comment(vk, group_id, post_id, bad, listComment_id, 0)
                         for i in range(50):
                             time.sleep(20)
@@ -75,7 +70,6 @@ def comment(vk, group_id, post_id, bad, listComment_id, if3):
                     if count < 101:                                                                                                 # если коммментов стало меньше чем 101
                         comm = vk.wall.getComments(owner_id=group_id, post_id=post_id, count=count, sort='desc', offset=x, thread_items_count=10)      # со сдвигом
                         send_to_check(vk, count, comm, group_id, bad, listComment_id, 0)
-
         elif count < 101:                                                                                   # если комментов изначально меньше 101
             comm = vk.wall.getComments(owner_id=group_id, post_id=post_id, count=count, sort='desc', thread_items_count=10)        # получаем комментарии
             send_to_check(vk, count, comm, group_id, bad, listComment_id, 0)
@@ -102,8 +96,6 @@ def check(vk, group_id, bad, url, comment_id, id, listComment_id, if3):
         imagesfolder = 'images/'+str(comment_id)+str(id)+'.jpg'                                                # путь до фотки
         with open(imagesfolder, 'wb') as f:                                                         # загрузка фотки
             f.write(r.content)
-
-
         img = cv2.imread(imagesfolder)
         img = cv2.resize(img, None, fx=1.2, fy=1.7, interpolation=cv2.INTER_CUBIC)
         kernel = np.ones((1, 1), np.uint8)
@@ -156,19 +148,13 @@ def check(vk, group_id, bad, url, comment_id, id, listComment_id, if3):
                                 print(Fore.RED + " Зарепортил[-] из-за оффлайна(возможно взломанный акк или бот)")
                         else:
                             listComment_id.append(comment_id)
-
-
     except Exception as e:
         print(e)
         pass
 
 
 
-
-
 # 2 скрипт для проверки обычных комментариев
-
-
 
 
 
@@ -252,11 +238,6 @@ def check1(vk, group_id, bad, text, comment_id, listComment_id):
         pass
 
 
-
-
-
-
-
 if __name__ == '__main__':
     # список для проверки комментариев
     bad = 'https', 't.me', 'vk.com', 'получи,стикер', 'instag', 'youtube', 'халява', 'прайм', 'в лс', '#слив', 'вас обмануть', 'теле2', 'переходи', 'стин', 'стене'
@@ -264,8 +245,6 @@ if __name__ == '__main__':
     bad1 = 'пиш', 'брауз', 'тел', 'дет', 'цп', 'порн', 'смот', 'вбив', 'лет', 'det', 'cp', 'porn', 'pish', 'tel', 'слив', 'sliv', 'школ', 'tg', 'lvl', 'ищи', 'вбей', 'стин', 'закре','поиск','стене'
 
     token = "" # ваш токен
-
-
     while True:
         print(Fore.RED + Back.BLACK + "Автор: https://vk.com/dev.help"+ Fore.YELLOW + Back.BLACK +"\nВыберите режим работы...\n")
         inp = input(Fore.GREEN + Back.BLACK + "1. Бесконечный режим 2 скриптов\n2. Проверка на ссылки в 5 последних постах через каждые 15 минут\n3. Проверка последнего поста и последущая проверка новых постов на цп\n")
@@ -327,7 +306,6 @@ if __name__ == '__main__':
                 group_id = input()
             else:
                 print(Fore.RED + Back.BLACK + "Введите точные данные") 
-
             try:
                 if group_id[0] == "-":
                     main1(token, bad, group_id)
