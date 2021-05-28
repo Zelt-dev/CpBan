@@ -165,8 +165,8 @@ def check_video(vk, group_id, bad, title, comment_id, id, description, owner_id,
             video = vk.video.getComments(owner_id=owner_id, video_id=video_id)
             x = 0
             count = video['count']
-            for x in range(count):
-                text = video['items'][x]['text']
+            for l in range(count):
+                text = video['items'][l]['text']
                 for i in range(len(bad)):
                     if bad[i] in text:
                         bad_found = bad[i]
