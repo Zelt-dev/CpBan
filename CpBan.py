@@ -150,52 +150,57 @@ def send_to_check(vk, count, comm, group_id, bad, listComment_id, if3):
 def check_video(vk, group_id, bad, title, comment_id, id, description, owner_id, video_id, listComment_id, if3):
 
     x = 0
-    for i in range(len(bad)):                       # проверка запрещенных слов в тексте
+    for i in range(len(bad)):                       # проверка запрещенных слов в названии
         if bad[i] in title:
             bad_found = bad[i]
             x = x+1
     if x > 0:
+
         if comment_id not in listComment_id:
             vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
             listComment_id.append(comment_id)
             print(Fore.RED + "[в названии видео] Зарепортил[+] из-за: "+bad_found)
             x = 0
-    else:
+
+    elif x == 0:
         if comment_id not in listComment_id:
-            video = vk.video.getComments(owner_id=owner_id, video_id=video_id)
             x = 0
-            count = video['count']
-            for l in range(count):
-                text = video['items'][l]['text']
-                for i in range(len(bad)):
-                    if bad[i] in text:
-                        bad_found = bad[i]
-                        x = x+1
-                if x > 0:
-                    vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                    listComment_id.append(comment_id)
-                    print(Fore.RED +"[в комментариях под видео] Зарепортил[+] из-за: "+bad_found+"    "+text)
-                    x = 0
-                else:
+            for q in range(len(bad)):
+                if bad[q] in description:
+                    bad_found = bad[q]
+                    x = x+1
+            if x > 0:
+                vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
+                listComment_id.append(comment_id)
+                print(Fore.RED + "[в описании видео] Зарепортил[+] из-за: "+bad_found+"     "+description)
+                x = 0
+
+            elif x == 0:
+                video = vk.video.getComments(owner_id=owner_id, video_id=video_id)
+                x = 0
+                count = video['count']
+                for l in range(count):
+                    text = video['items'][l]['text']
                     for i in range(len(bad)):
-                        if bad[i] in description:
+                        if bad[i] in text:
                             bad_found = bad[i]
                             x = x+1
-                    if x > 0:
-                        vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                        listComment_id.append(comment_id)
-                        print(Fore.RED + "[в описании видео] Зарепортил[+] из-за: "+bad_found+"     "+description)
-                        x = 0
-                    else:
-                        if if3 == 0:
-                            pass
-                        elif if3 == 1:
-                            ug = vk.users.get(user_ids=id, fields="online")
-                            if ug[0]['online'] == 0:
-                                vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                                listComment_id.append(comment_id)
-                                print(Fore.RED + "[Видео] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
-                                x = 0
+                        if x > 0:
+                            vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
+                            listComment_id.append(comment_id)
+                            print(Fore.RED +"[в комментариях под видео] Зарепортил[+] из-за: "+bad_found+"    "+text)
+                            x = 0
+                        else:
+                            if if3 == 0:
+                                pass
+                            elif if3 == 1:
+                                ug = vk.users.get(user_ids=id, fields="online")
+                                if ug[0]['online'] == 0:
+                                    vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
+                                    listComment_id.append(comment_id)
+                                    print(Fore.RED + "[Видео] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
+                                    x = 0
+
 
 
 
