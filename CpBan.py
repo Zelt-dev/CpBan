@@ -66,6 +66,7 @@ def get_comments(vk, group_id, post_id,
     count = vk.wall.getComments(owner_id=group_id,
                                 post_id=post_id, count=1)['count']
     print(Fore.GREEN + "Всего комментариев "+str(count))             # получаем кол-во комментариев
+    
     if count > 100:               # если больше чем 99
         comment = vk.wall.getComments(owner_id=group_id,
                                     post_id=post_id,
@@ -74,6 +75,7 @@ def get_comments(vk, group_id, post_id,
                                     thread_items_count=10)               # без сдвига
         send_to_check(vk, count, comment, group_id, listComment_id, if3)
         count = count-100
+        
         if count < 101:            # если коммментов стало меньше чем 100
             comment = vk.wall.getComments(owner_id=group_id,
                                         post_id=post_id,
@@ -82,6 +84,7 @@ def get_comments(vk, group_id, post_id,
                                         offset=100,
                                         thread_items_count=10)            # со сдвигом
             send_to_check(vk, count, comment, group_id, listComment_id, if3)
+        
         elif count > 100:                # если комментов осталось больше 100
             x = 0
             while count > 100:
@@ -94,6 +97,7 @@ def get_comments(vk, group_id, post_id,
                 send_to_check(vk, count, comment, group_id, listComment_id, if3)
                 count = count-100
                 x = x+100
+                
                 if count < 101:                  # если коммментов стало меньше чем 101
                     comment = vk.wall.getComments(owner_id=group_id,
                                                 post_id=post_id,
@@ -102,6 +106,7 @@ def get_comments(vk, group_id, post_id,
                                                 offset=x,
                                                 thread_items_count=10)      # со сдвигом
                     send_to_check(vk, count, comment, group_id, listComment_id, if3)
+    
     elif count < 101:                                   # если комментов изначально меньше 101
         comment = vk.wall.getComments(owner_id=group_id,
                                     post_id=post_id,
@@ -207,19 +212,19 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                         if bad_text[i] in text:
                             bad_found = bad_text[i]
                             x = x+1
-                        if x > 0:
-                            vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                            listComment_id.append(str(group_id) + str(comment_id))
-                            print(Fore.RED +"[в комментариях под видео] Зарепортил[+] из-за: "+bad_found+"    "+text)
-                        else:
-                            if if3 == 0:
-                                pass
-                            elif if3 == 1:
-                                users_get = vk.users.get(user_ids=id, fields="online")
-                                if users_get[0]['online'] == 0:
-                                    vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                                    listComment_id.append(str(group_id) + str(comment_id))
-                                    print(Fore.RED + "[Видео] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
+                    if x > 0:
+                        vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
+                        listComment_id.append(str(group_id) + str(comment_id))
+                        print(Fore.RED +"[в комментариях под видео] Зарепортил[+] из-за: "+bad_found+"    "+text)
+                    else:
+                        if if3 == 0:
+                            pass
+                        elif if3 == 1:
+                            users_get = vk.users.get(user_ids=id, fields="online")
+                            if users_get[0]['online'] == 0:
+                                vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
+                                listComment_id.append(str(group_id) + str(comment_id))
+                                print(Fore.RED + "[Видео] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
 
 
 
