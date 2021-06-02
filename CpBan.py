@@ -51,79 +51,84 @@ def main(token, group_id):
                         print(Fore.GREEN + "Обнаружен пост, жду набор комментариев с цп")
                         time.sleep(15)
                         print(Fore.GREEN + "Проверка поста -- "+str(post_id))
-                        listComment_id = []
-                        get_comments(vk, group_id, post_id, listComment_id, 1)
+                        list_id = []
+                        get_comments(vk, group_id, post_id, list_id, 1)
                         for i in range(50):
                             time.sleep(20)
                             get_comments(vk, group_id, post_id,
-                                         listComment_id, 0)
+                                         list_id, 0)
     except Exception as e:
         print(e)
+        pass
 
 
 def get_comments(vk, group_id, post_id,
-                 listComment_id, if3):
-    count = vk.wall.getComments(owner_id=group_id,
-                                post_id=post_id, count=1)['count']
-    print(Fore.GREEN + "Всего комментариев "+str(count))             # получаем кол-во комментариев
-    
-    if count > 100:               # если больше чем 99
-        comment = vk.wall.getComments(owner_id=group_id,
-                                    post_id=post_id,
-                                    count=100,
-                                    sort='desc',
-                                    thread_items_count=10)               # без сдвига
-        send_to_check(vk, count, comment, group_id, listComment_id, if3)
-        count = count-100
+                 list_id, if3):
+    try:
+        count = vk.wall.getComments(owner_id=group_id,
+                                    post_id=post_id, count=1)['count']
+        print(Fore.GREEN + "Всего комментариев "+str(count))             # получаем кол-во комментариев
         
-        if count < 101:            # если коммментов стало меньше чем 100
+        if count > 100:               # если больше чем 99
             comment = vk.wall.getComments(owner_id=group_id,
                                         post_id=post_id,
-                                        count=count,
+                                        count=100,
                                         sort='desc',
-                                        offset=100,
-                                        thread_items_count=10)            # со сдвигом
-            send_to_check(vk, count, comment, group_id, listComment_id, if3)
-        
-        elif count > 100:                # если комментов осталось больше 100
-            x = 0
-            while count > 100:
+                                        thread_items_count=10)               # без сдвига
+            send_to_check(vk, count, comment, group_id, list_id, if3)
+            count = count-100
+            
+            if count < 101:            # если коммментов стало меньше чем 100
                 comment = vk.wall.getComments(owner_id=group_id,
                                             post_id=post_id,
                                             count=count,
                                             sort='desc',
-                                            offset=x+100,
-                                            thread_items_count=10)        # со сдвигом + 100
-                send_to_check(vk, count, comment, group_id, listComment_id, if3)
-                count = count-100
-                x = x+100
-                
-                if count < 101:                  # если коммментов стало меньше чем 101
+                                            offset=100,
+                                            thread_items_count=10)            # со сдвигом
+                send_to_check(vk, count, comment, group_id, list_id, if3)
+            
+            elif count > 100:                # если комментов осталось больше 100
+                x = 0
+                while count > 100:
                     comment = vk.wall.getComments(owner_id=group_id,
                                                 post_id=post_id,
                                                 count=count,
                                                 sort='desc',
-                                                offset=x,
-                                                thread_items_count=10)      # со сдвигом
-                    send_to_check(vk, count, comment, group_id, listComment_id, if3)
-    
-    elif count < 101:                                   # если комментов изначально меньше 101
-        comment = vk.wall.getComments(owner_id=group_id,
-                                    post_id=post_id,
-                                    count=count,
-                                    sort='desc',
-                                    thread_items_count=10)        # получаем комментарии
-        send_to_check(vk, count, comment, group_id, listComment_id, if3)
+                                                offset=x+100,
+                                                thread_items_count=10)        # со сдвигом + 100
+                    send_to_check(vk, count, comment, group_id, list_id, if3)
+                    count = count-100
+                    x = x+100
+                    
+                    if count < 101:                  # если коммментов стало меньше чем 101
+                        comment = vk.wall.getComments(owner_id=group_id,
+                                                    post_id=post_id,
+                                                    count=count,
+                                                    sort='desc',
+                                                    offset=x,
+                                                    thread_items_count=10)      # со сдвигом
+                        send_to_check(vk, count, comment, group_id, list_id, if3)
+        
+        elif count < 101:                                   # если комментов изначально меньше 101
+            comment = vk.wall.getComments(owner_id=group_id,
+                                        post_id=post_id,
+                                        count=count,
+                                        sort='desc',
+                                        thread_items_count=10)        # получаем комментарии
+            send_to_check(vk, count, comment, group_id, list_id, if3)
+    except:
+        pass
 
 
-def send_to_check(vk, count, comment, group_id, listComment_id, if3):
+def send_to_check(vk, count, comment, group_id, list_id, if3):
     for i in range(count):
         try:
             if bool(comment['items'][i]['text']) is True:
                 check_text(vk, group_id,
                 comment['items'][i]['text'],
                 comment['items'][i]['id'],
-                listComment_id)
+                comment['items'][i]['from_id'],
+                list_id)
 
                 if bool(comment['items'][i]['thread']['count'] > 0) is True:
                     for x in range(comment['items'][i]['thread']['count']):
@@ -131,7 +136,8 @@ def send_to_check(vk, count, comment, group_id, listComment_id, if3):
                         check_text(vk, group_id,
                         comment['items'][i]['thread']['items'][x]['text'],
                         comment['items'][i]['thread']['items'][x]['id'],
-                        listComment_id)
+                        comment['items'][i]['thread']['items'][x]['from_id'],
+                        list_id)
         except:
             pass
         try:
@@ -140,14 +146,14 @@ def send_to_check(vk, count, comment, group_id, listComment_id, if3):
                     comment['items'][i]['attachments'][0]['photo']['sizes'][6]['url'],
                     comment['items'][i]['id'],
                     comment['items'][i]["from_id"],
-                    listComment_id, if3)
+                    list_id, if3)
                 if bool(comment['items'][i]['thread']['count'] > 0) is True:
                     for x in range(comment['items'][i]['thread']['count']):
                         check_photo(vk, group_id,
                         comment['items'][i]['thread']['items'][x]['attachments'][0]['photo']['sizes'][6]['url'],
                         comment['items'][i]['thread']['items'][x]['id'],
                         comment['items'][i]['thread']['items'][x]["from_id"],
-                        listComment_id, if3)
+                        list_id, if3)
         except:
            pass
         try:
@@ -160,7 +166,7 @@ def send_to_check(vk, count, comment, group_id, listComment_id, if3):
                 comment['items'][i]["attachments"][0]["video"]['description'],
                 comment['items'][i]["attachments"][0]["video"]['owner_id'],
                 comment['items'][i]["attachments"][0]["video"]['id'],
-                listComment_id, if3)
+                list_id, if3)
 
                 if bool(comment['items'][i]['thread']['count'] > 0) is True:
                     for x in range(comment['items'][i]['thread']['count']):
@@ -171,12 +177,12 @@ def send_to_check(vk, count, comment, group_id, listComment_id, if3):
                         comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['description'],
                         comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['owner_id'],
                         comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['id'],
-                        listComment_id, if3)
+                        list_id, if3)
         except:
             pass
 
 
-def check_video(vk, group_id, title, comment_id, id, description, owner_id, video_id, listComment_id, if3):
+def check_video(vk, group_id, title, comment_id, id, description, owner_id, video_id, list_id, if3):
     global bad_text
     x = 0
     for i in range(len(bad_text)):                     # проверка запрещенных слов в названии
@@ -185,13 +191,16 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
             x = x+1
     if x > 0:
 
-        if str(group_id) + str(comment_id) not in listComment_id:
+        if str(id) not in list_id:
             vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-            listComment_id.append(str(group_id) + str(comment_id))
-            print(Fore.RED + "[в названии видео] Зарепортил[+] из-за: "+bad_found)
+            list_id.append(str(id))
+            ug = vk.users.get(user_ids=id)
+            f_name = ug[0]['first_name']
+            l_name = ug[0]['last_name']
+            print(Fore.RED + "[в названии видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found)
 
     elif x == 0:
-        if str(group_id) + str(comment_id) not in listComment_id:
+        if str(id) not in list_id:
             x = 0 
             for q in range(len(bad_text)):
                 if bad_text[q] in description:
@@ -199,8 +208,11 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                     x = x+1
             if x > 0:
                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                listComment_id.append(str(group_id) + str(comment_id))
-                print(Fore.RED + "[в описании видео] Зарепортил[+] из-за: "+bad_found+"     "+description)
+                list_id.append(str(id))
+                ug = vk.users.get(user_ids=id)
+                f_name = ug[0]['first_name']
+                l_name = ug[0]['last_name']
+                print(Fore.RED + "[в описании видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"     "+description)
 
             elif x == 0:
                 video = vk.video.getComments(owner_id=owner_id, video_id=video_id)
@@ -214,8 +226,11 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                             x = x+1
                     if x > 0:
                         vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                        listComment_id.append(str(group_id) + str(comment_id))
-                        print(Fore.RED +"[в комментариях под видео] Зарепортил[+] из-за: "+bad_found+"    "+text)
+                        list_id.append(str(id))
+                        ug = vk.users.get(user_ids=id)
+                        f_name = ug[0]['first_name']
+                        l_name = ug[0]['last_name']
+                        print(Fore.RED +"[в комментариях под видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"    "+text)
                     else:
                         if if3 == 0:
                             pass
@@ -223,15 +238,18 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                             users_get = vk.users.get(user_ids=id, fields="online")
                             if users_get[0]['online'] == 0:
                                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                                listComment_id.append(str(group_id) + str(comment_id))
-                                print(Fore.RED + "[Видео] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
+                                list_id.append(str(id))
+                                ug = vk.users.get(user_ids=id)
+                                f_name = ug[0]['first_name']
+                                l_name = ug[0]['last_name']
+                                print(Fore.RED + "[Видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
 
 
 
 
 
 def check_photo(vk, group_id, url, comment_id,
-                id, listComment_id, if3):
+                id, list_id, if3):
     global bad_text_on_photo
     try:
         r = requests.get(url)                                                                       # получаем фотку
@@ -255,24 +273,33 @@ def check_photo(vk, group_id, url, comment_id,
                 bad_found = bad_text_on_photo[i]
                 x = x+1
         if x > 0:
-            if str(group_id) + str(comment_id) not in listComment_id:
+            if str(id) not in list_id:
                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                listComment_id.append(str(group_id) + str(comment_id))
-                print(Fore.RED + "[фото] Зарепортил[+] из-за: "+bad_found)
+                list_id.append(str(id))
+                ug = vk.users.get(user_ids=id)
+                f_name = ug[0]['first_name']
+                l_name = ug[0]['last_name']
+                print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found)
         else:
-            if str(group_id) + str(comment_id) not in listComment_id:
+            if str(id) not in list_id:
                 if id > 651000000:
 
                         vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                        listComment_id.append(str(group_id) + str(comment_id))
-                        print(Fore.RED + "[фото] Зарепортил[+] из-за недавно созданной страницы")
+                        list_id.append(str(id))
+                        ug = vk.users.get(user_ids=id)
+                        f_name = ug[0]['first_name']
+                        l_name = ug[0]['last_name']
+                        print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за недавно созданной страницы")
                 else:
                     users_get = vk.users.get(user_ids=id, fields="has_photo")
                     if users_get[0]['has_photo'] == 0:
 
                             vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                            listComment_id.append(str(group_id) + str(comment_id))
-                            print(Fore.RED + "[фото] Зарепортил[+] из-за отсутствия авы")
+                            list_id.append(str(id))
+                            ug = vk.users.get(user_ids=id)
+                            f_name = ug[0]['first_name']
+                            l_name = ug[0]['last_name']
+                            print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за отсутствия авы")
                     else:
                         if if3 == 0:
                             pass
@@ -281,8 +308,11 @@ def check_photo(vk, group_id, url, comment_id,
                             if users_get[0]['online'] == 0:
 
                                     vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                                    listComment_id.append(str(group_id) + str(comment_id))
-                                    print(Fore.RED + "[фото] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
+                                    list_id.append(str(id))
+                                    ug = vk.users.get(user_ids=id)
+                                    f_name = ug[0]['first_name']
+                                    l_name = ug[0]['last_name']
+                                    print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
     except Exception as e:
         print(e)
         pass
@@ -294,7 +324,7 @@ def check_photo(vk, group_id, url, comment_id,
 
 
 def main1(token, group_id):
-    listComment_id = []
+    list_id = []
     while True:
         group_id = group_id
         vk_session = vk_api.VkApi(token=token)
@@ -304,13 +334,13 @@ def main1(token, group_id):
         for i in range(5):
             post_id = getwall['items'][i]['id']    # получаем пост id
             print(Fore.YELLOW + "Проверка поста -- " + str(post_id))
-            get_comments1(vk, group_id, post_id, listComment_id)    # выполняем функцию
+            get_comments1(vk, group_id, post_id, list_id)    # выполняем функцию
         print("Ожидание 15 минут\n\n\n")
         time.sleep(60*15)
 
 
 def get_comments1(vk, group_id, post_id,
-                        listComment_id):
+                        list_id):
     count = vk.wall.getComments(owner_id=group_id, post_id=post_id,count=1)['count']
     print(Fore.GREEN + "Всего комментариев " + str(count))                    # получаем кол-во комментариев
     
@@ -319,7 +349,7 @@ def get_comments1(vk, group_id, post_id,
                                     post_id=post_id,
                                     count=100,
                                     sort='desc')                              # без сдвига
-        send_to_check_text(vk, count, comment, group_id, listComment_id)
+        send_to_check_text(vk, count, comment, group_id, list_id)
         count = count-100
         
         if count < 101:                                                      # если коммментов стало меньше чем 100
@@ -328,7 +358,7 @@ def get_comments1(vk, group_id, post_id,
                                         count=count,
                                         sort='desc',
                                         offset=100)            # со сдвигом
-            send_to_check_text(vk, count, comment, group_id, listComment_id)
+            send_to_check_text(vk, count, comment, group_id, list_id)
         
         elif count > 100:                                                   # если комментов осталось больше 100
             x = 0
@@ -338,42 +368,42 @@ def get_comments1(vk, group_id, post_id,
                                             count=count,
                                             sort='desc',
                                             offset=x + 100)             # со сдвигом + 100
-                send_to_check_text(vk, count, comment, group_id, listComment_id)
+                send_to_check_text(vk, count, comment, group_id, list_id)
                 count = count-100
                 if count < 101:                                                  # если коммментов стало меньше чем 101
                         comment = vk.wall.getComments( owner_id=group_id,
                                                     post_id=post_id,
                                                     count=count,
                                                     sort='desc', offset=x)      # со сдвигом
-                        send_to_check_text(vk, count, comment, group_id, listComment_id)
+                        send_to_check_text(vk, count, comment, group_id, list_id)
     
     elif count < 101:                                                      # если комментов изначально меньше 101
         comment = vk.wall.getComments(owner_id=group_id,
                                     post_id=post_id,
                                     count=count,
                                     sort='desc')        # получаем комментарии
-        send_to_check_text(vk, count, comment, group_id, listComment_id)
+        send_to_check_text(vk, count, comment, group_id, list_id)
 
 
-def send_to_check_text(vk, count, comment, group_id, listComment_id):
+def send_to_check_text(vk, count, comment, group_id, list_id):
     for i in range(count):
         try:
             check_text(vk, group_id,
             comment['items'][i]['text'],
             comment['items'][i]['id'],
-            listComment_id)
+            list_id)
 
             if comment['items'][i]['thread']['count'] != 0:
                 for x in range(comment['items'][i]['thread']['count']):
                     check_text(vk, group_id,
                     comment['items'][i]['thread']['items'][x]['text'],
                     comment['items'][i]['thread']['items'][x]['id'],
-                    listComment_id)
+                    list_id)
         except:
             pass
 
 
-def check_text(vk, group_id, text, comment_id, listComment_id):
+def check_text(vk, group_id, text, comment_id, id, list_id):
     global bad_text
     try:
         x = 0
@@ -382,10 +412,13 @@ def check_text(vk, group_id, text, comment_id, listComment_id):
                 bad_found = bad_text[i]
                 x = x+1
         if x > 0:
-            if str(group_id) + str(comment_id) not in listComment_id:
+            if str(id) not in list_id:
                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                listComment_id.append(str(group_id) + str(comment_id))
-                print(Fore.RED + "[текст] Зарепортил[+] из-за: "+bad_found+"      "+text)
+                list_id.append(str(id))
+                ug = vk.users.get(user_ids=id)
+                f_name = ug[0]['first_name']
+                l_name = ug[0]['last_name']
+                print(Fore.RED + "[текст, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"      "+text)
     except Exception as e:
         print(e)
         pass
@@ -434,14 +467,14 @@ if __name__ == '__main__':
                     print(Fore.YELLOW + Back.BLACK + "\n\n\nЗапуск второго скрипта...")
                     vk_session = vk_api.VkApi(token=token)
                     vk = vk_session.get_api()
-                    listComment_id = []
+                    list_id = []
                     check_post = vk.wall.get(owner_id=group_id, count=2)
                     if check_post['items'][0]['is_pinned'] == 1:
                             post_id = check_post['items'][1]['id']
                     else:
                         post_id = check_post['items'][0]['id']
                     print(Fore.YELLOW + Back.BLACK + "Проверка последнего поста...")
-                    get_comments(vk, group_id, post_id, listComment_id, 1)
+                    get_comments(vk, group_id, post_id, list_id, 1)
                     print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
                     main(token, group_id)
 
@@ -458,7 +491,7 @@ if __name__ == '__main__':
                 if group_id[0] == "-":
                     vk_session = vk_api.VkApi(token=token)
                     vk = vk_session.get_api()
-                    listComment_id = []
+                    list_id = []
                     check_post = vk.wall.get(owner_id=group_id, count=2)
                     try:
                         if check_post['items'][0]['is_pinned'] == 1:
@@ -466,7 +499,8 @@ if __name__ == '__main__':
                     except:
                         post_id = check_post['items'][0]['id']
                     print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
-                    get_comments(vk, group_id, post_id, listComment_id, 0)
+                    print(Fore.YELLOW + Back.BLACK + "Проверка последнего поста...")
+                    get_comments(vk, group_id, post_id, list_id, 0)
                     main(token, group_id)
                     print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
                 else:
