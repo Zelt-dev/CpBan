@@ -225,12 +225,13 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                             bad_found = bad_text[i]
                             x = x+1
                     if x > 0:
-                        vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
-                        list_id.append(str(id))
-                        ug = vk.users.get(user_ids=id)
-                        f_name = ug[0]['first_name']
-                        l_name = ug[0]['last_name']
-                        print(Fore.RED +"[в комментариях под видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"    "+text)
+                        if str(id) not in list_id:
+                            vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
+                            list_id.append(str(id))
+                            ug = vk.users.get(user_ids=id)
+                            f_name = ug[0]['first_name']
+                            l_name = ug[0]['last_name']
+                            print(Fore.RED +"[в комментариях под видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"    "+text)
                     else:
                         if if3 == 0:
                             pass
@@ -459,52 +460,55 @@ if __name__ == '__main__':
 
 
             if inp == '1':
-                if group_id[0] == "-":
-                    t1 = threading.Thread(target=main1, args=(token, group_id,))
-                    print(Fore.YELLOW + Back.BLACK + "Запуск первого скрипта...")
-                    t1.start()
-                    time.sleep(20)
-                    print(Fore.YELLOW + Back.BLACK + "\n\n\nЗапуск второго скрипта...")
-                    vk_session = vk_api.VkApi(token=token)
-                    vk = vk_session.get_api()
-                    list_id = []
-                    check_post = vk.wall.get(owner_id=group_id, count=2)
-                    if check_post['items'][0]['is_pinned'] == 1:
-                            post_id = check_post['items'][1]['id']
-                    else:
-                        post_id = check_post['items'][0]['id']
-                    print(Fore.YELLOW + Back.BLACK + "Проверка последнего поста...")
-                    get_comments(vk, group_id, post_id, list_id, 1)
-                    print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
-                    main(token, group_id)
+                while True:
+                    if group_id[0] == "-":
+                        t1 = threading.Thread(target=main1, args=(token, group_id,))
+                        print(Fore.YELLOW + Back.BLACK + "Запуск первого скрипта...")
+                        t1.start()
+                        time.sleep(20)
+                        print(Fore.YELLOW + Back.BLACK + "\n\n\nЗапуск второго скрипта...")
+                        vk_session = vk_api.VkApi(token=token)
+                        vk = vk_session.get_api()
+                        list_id = []
+                        check_post = vk.wall.get(owner_id=group_id, count=2)
+                        if check_post['items'][0]['is_pinned'] == 1:
+                                post_id = check_post['items'][1]['id']
+                        else:
+                            post_id = check_post['items'][0]['id']
+                        print(Fore.YELLOW + Back.BLACK + "Проверка последнего поста...")
+                        get_comments(vk, group_id, post_id, list_id, 1)
+                        print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
+                        main(token, group_id)
 
 
             elif inp == '2':
-                if group_id[0] == "-":
-                    print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
-                    main1(token, group_id)
-                else:
-                    print(Fore.RED + Back.BLACK + "Введите точные данные")
+                while True:
+                    if group_id[0] == "-":
+                        print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
+                        main1(token, group_id)
+                    else:
+                        print(Fore.RED + Back.BLACK + "Введите точные данные")
 
 
             elif inp == '3':
-                if group_id[0] == "-":
-                    vk_session = vk_api.VkApi(token=token)
-                    vk = vk_session.get_api()
-                    list_id = []
-                    check_post = vk.wall.get(owner_id=group_id, count=2)
-                    try:
-                        if check_post['items'][0]['is_pinned'] == 1:
-                            post_id = check_post['items'][1]['id']
-                    except:
-                        post_id = check_post['items'][0]['id']
-                    print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
-                    print(Fore.YELLOW + Back.BLACK + "Проверка последнего поста...")
-                    get_comments(vk, group_id, post_id, list_id, 0)
-                    main(token, group_id)
-                    print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
-                else:
-                    print(Fore.RED + Back.BLACK + "Введите точные данные")
+                while True:
+                    if group_id[0] == "-":
+                        vk_session = vk_api.VkApi(token=token)
+                        vk = vk_session.get_api()
+                        list_id = []
+                        check_post = vk.wall.get(owner_id=group_id, count=2)
+                        try:
+                            if check_post['items'][0]['is_pinned'] == 1:
+                                post_id = check_post['items'][1]['id']
+                        except:
+                            post_id = check_post['items'][0]['id']
+                        print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
+                        print(Fore.YELLOW + Back.BLACK + "Проверка последнего поста...")
+                        get_comments(vk, group_id, post_id, list_id, 0)
+                        main(token, group_id)
+                        print(Fore.YELLOW + Back.BLACK + "Запуск скрипта...")
+                    else:
+                        print(Fore.RED + Back.BLACK + "Введите точные данные")
 
 
         except Exception as e:
