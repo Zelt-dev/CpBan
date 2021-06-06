@@ -78,7 +78,8 @@ def main1(token, group_id):
         time.sleep(60*15)
 
 
-def get_comments(vk, group_id, post_id, list_id, if3):
+def get_comments(vk, group_id, post_id,
+                 list_id, if3):
     try:
         count = vk.wall.getComments(owner_id=group_id,
                                     post_id=post_id, count=1)['count']
@@ -183,6 +184,8 @@ def get_comments1(vk, group_id, post_id,
 
 def send_to_check(vk, count, comment, group_id, list_id, if3):
     for i in range(count):
+        """======================================================
+        Проверка текста в комментарие """
         try:
             if bool(comment['items'][i]['text']) is True:
                 check_text(vk, group_id,
@@ -190,8 +193,11 @@ def send_to_check(vk, count, comment, group_id, list_id, if3):
                 comment['items'][i]['id'],
                 comment['items'][i]['from_id'],
                 list_id)
-
+        except:
+            pass
+        try:
                 if bool(comment['items'][i]['thread']['count'] > 0) is True:
+                    x = 0
                     for x in range(comment['items'][i]['thread']['count']):
 
                         check_text(vk, group_id,
@@ -201,6 +207,8 @@ def send_to_check(vk, count, comment, group_id, list_id, if3):
                         list_id)
         except:
             pass
+        """======================================================
+        Проверка фото в комментарие """
         try:
             if bool(comment['items'][i]['attachments'][0]['photo']['sizes'][6]['url']) is True:
                 check_photo(vk, group_id,
@@ -208,15 +216,21 @@ def send_to_check(vk, count, comment, group_id, list_id, if3):
                     comment['items'][i]['id'],
                     comment['items'][i]["from_id"],
                     list_id, if3)
-                if bool(comment['items'][i]['thread']['count'] > 0) is True:
-                    for x in range(comment['items'][i]['thread']['count']):
-                        check_photo(vk, group_id,
-                        comment['items'][i]['thread']['items'][x]['attachments'][0]['photo']['sizes'][6]['url'],
-                        comment['items'][i]['thread']['items'][x]['id'],
-                        comment['items'][i]['thread']['items'][x]["from_id"],
-                        list_id, if3)
         except:
-           pass
+            pass
+        try:
+            if bool(comment['items'][i]['thread']['count'] > 0) is True:
+                x = 0
+                for x in range(comment['items'][i]['thread']['count']):
+                    check_photo(vk, group_id,
+                    comment['items'][i]['thread']['items'][x]['attachments'][0]['photo']['sizes'][6]['url'],
+                    comment['items'][i]['thread']['items'][x]['id'],
+                    comment['items'][i]['thread']['items'][x]["from_id"],
+                    list_id, if3)
+        except:
+            pass
+        """======================================================
+        Проверка видео в комментарии """
         try:
             if bool(comment['items'][i]['attachments'][0]['video']) is True:
 
@@ -228,17 +242,20 @@ def send_to_check(vk, count, comment, group_id, list_id, if3):
                 comment['items'][i]["attachments"][0]["video"]['owner_id'],
                 comment['items'][i]["attachments"][0]["video"]['id'],
                 list_id, if3)
-
-                if bool(comment['items'][i]['thread']['count'] > 0) is True:
-                    for x in range(comment['items'][i]['thread']['count']):
-                        check_video(vk, group_id,
-                        comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]["title"],
-                        comment['items'][i]['thread']['items'][x]['id'],
-                        comment['items'][i]['thread']['items'][x]['from_id'],
-                        comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['description'],
-                        comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['owner_id'],
-                        comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['id'],
-                        list_id, if3)
+        except:
+            pass
+        try:
+            if bool(comment['items'][i]['thread']['count'] > 0) is True:
+                x = 0
+                for x in range(comment['items'][i]['thread']['count']):
+                    check_video(vk, group_id,
+                    comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]["title"],
+                    comment['items'][i]['thread']['items'][x]['id'],
+                    comment['items'][i]['thread']['items'][x]['from_id'],
+                    comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['description'],
+                    comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['owner_id'],
+                    comment['items'][i]['thread']['items'][x]["attachments"][0]["video"]['id'],
+                    list_id, if3)
         except:
             pass
 
@@ -268,14 +285,14 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
         if bad_text[i] in title:
             bad_found = bad_text[i]
             x = x+1
-    ug = vk.users.get(user_ids=id)
-    f_name = ug[0]['first_name']
-    l_name = ug[0]['last_name']
     if x > 0:
 
         if str(id) not in list_id:
             vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
             list_id.append(str(id))
+            ug = vk.users.get(user_ids=id)
+            f_name = ug[0]['first_name']
+            l_name = ug[0]['last_name']
             print(Fore.RED + "[в названии видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found)
 
     elif x == 0:
@@ -288,6 +305,9 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
             if x > 0:
                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                 list_id.append(str(id))
+                ug = vk.users.get(user_ids=id)
+                f_name = ug[0]['first_name']
+                l_name = ug[0]['last_name']
                 print(Fore.RED + "[в описании видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"     "+description)
 
             elif x == 0:
@@ -304,6 +324,9 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                         if str(id) not in list_id:
                             vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                             list_id.append(str(id))
+                            ug = vk.users.get(user_ids=id)
+                            f_name = ug[0]['first_name']
+                            l_name = ug[0]['last_name']
                             print(Fore.RED +"[в комментариях под видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found+"    "+text)
                     else:
                         if if3 == 0:
@@ -313,6 +336,9 @@ def check_video(vk, group_id, title, comment_id, id, description, owner_id, vide
                             if users_get[0]['online'] == 0:
                                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                                 list_id.append(str(id))
+                                ug = vk.users.get(user_ids=id)
+                                f_name = ug[0]['first_name']
+                                l_name = ug[0]['last_name']
                                 print(Fore.RED + "[Видео, "+ f_name + " " + l_name +"] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
 
 
@@ -340,13 +366,13 @@ def check_photo(vk, group_id, url, comment_id,
             if bad_text_on_photo[i] in prpp:
                 bad_found = bad_text_on_photo[i]
                 x = x+1
-        ug = vk.users.get(user_ids=id)
-        f_name = ug[0]['first_name']
-        l_name = ug[0]['last_name']
         if x > 0:
             if str(id) not in list_id:
                 vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                 list_id.append(str(id))
+                ug = vk.users.get(user_ids=id)
+                f_name = ug[0]['first_name']
+                l_name = ug[0]['last_name']
                 print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за: "+bad_found)
         else:
             if str(id) not in list_id:
@@ -354,6 +380,9 @@ def check_photo(vk, group_id, url, comment_id,
 
                         vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                         list_id.append(str(id))
+                        ug = vk.users.get(user_ids=id)
+                        f_name = ug[0]['first_name']
+                        l_name = ug[0]['last_name']
                         print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за недавно созданной страницы")
                 else:
                     users_get = vk.users.get(user_ids=id, fields="has_photo")
@@ -361,6 +390,9 @@ def check_photo(vk, group_id, url, comment_id,
 
                             vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                             list_id.append(str(id))
+                            ug = vk.users.get(user_ids=id)
+                            f_name = ug[0]['first_name']
+                            l_name = ug[0]['last_name']
                             print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за отсутствия авы")
                     else:
                         if if3 == 0:
@@ -371,6 +403,9 @@ def check_photo(vk, group_id, url, comment_id,
 
                                     vk.wall.reportComment(owner_id=group_id, comment_id=comment_id, reason=0)
                                     list_id.append(str(id))
+                                    ug = vk.users.get(user_ids=id)
+                                    f_name = ug[0]['first_name']
+                                    l_name = ug[0]['last_name']
                                     print(Fore.RED + "[фото, "+ f_name + " " + l_name +"] Зарепортил[+] из-за оффлайна(возможно взломанный акк или бот)")
     except Exception as e:
         print(e)
